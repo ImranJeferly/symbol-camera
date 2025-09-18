@@ -11,6 +11,7 @@ export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
   const [gridCols, setGridCols] = useState(80);
   const [gridRows, setGridRows] = useState(60);
+  const [colorPhase, setColorPhase] = useState(0);
 
   // ASCII characters from lightest to darkest - with select numbers and letters
   const getAsciiChar = (intensity: number): string => {
@@ -47,6 +48,58 @@ export default function Home() {
       window.removeEventListener('resize', calculateGridDimensions);
     };
   }, []);
+
+  // RGB color cycling animation effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setColorPhase(prevPhase => (prevPhase + 1) % 600); // 600 steps for smooth transitions
+    }, 50); // Update every 50ms for smooth animation
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Get current RGB color based on phase
+  const getCurrentRGB = (phase: number): string => {
+    const segment = Math.floor(phase / 100); // 6 segments of 100 steps each
+    const progress = (phase % 100) / 100; // 0-1 progress within segment
+
+    let r = 0, g = 0, b = 0;
+
+    switch (segment) {
+      case 0: // Red to Yellow (increase green)
+        r = 255;
+        g = Math.floor(255 * progress);
+        b = 0;
+        break;
+      case 1: // Yellow to Green (decrease red)
+        r = Math.floor(255 * (1 - progress));
+        g = 255;
+        b = 0;
+        break;
+      case 2: // Green to Cyan (increase blue)
+        r = 0;
+        g = 255;
+        b = Math.floor(255 * progress);
+        break;
+      case 3: // Cyan to Blue (decrease green)
+        r = 0;
+        g = Math.floor(255 * (1 - progress));
+        b = 255;
+        break;
+      case 4: // Blue to Magenta (increase red)
+        r = Math.floor(255 * progress);
+        g = 0;
+        b = 255;
+        break;
+      case 5: // Magenta to Red (decrease blue)
+        r = 255;
+        g = 0;
+        b = Math.floor(255 * (1 - progress));
+        break;
+    }
+
+    return `rgb(${r}, ${g}, ${b})`;
+  };
 
   useEffect(() => {
     const startCamera = async () => {
@@ -250,7 +303,7 @@ export default function Home() {
 
       {pixelData.length > 0 ? (
         <pre
-          className="fixed top-0 left-0 font-mono bg-black text-white overflow-hidden"
+          className="fixed top-0 left-0 font-mono bg-black overflow-hidden"
           style={{
             width: '100vw',
             height: '100vh',
@@ -262,6 +315,7 @@ export default function Home() {
             whiteSpace: 'pre',
             display: 'block',
             zIndex: 1,
+            color: getCurrentRGB(colorPhase),
           }}
         >
           {pixelData.map((row) => row.join('') + '\n').join('')}
