@@ -258,6 +258,7 @@ export default function Home() {
             padding: 0,
             lineHeight: '1',
             fontSize: '16px',
+            color: '#00ff1a',
             letterSpacing: '0',
             whiteSpace: 'pre',
             display: 'block',
